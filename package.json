@@ -1,41 +1,28 @@
 {
-  "name": "discord-bot",
-  "version": "1.0.0",
-  "description": "Discord bot for message synchronization",
-  "main": "dist/index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5",
-    "firebase": "^10.8.0",
-    "openid-client": "^6.3.4"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
+    "name": "discord-bot",
+    "version": "1.0.0",
+    "description": "Discord bot for message synchronization",
+    "main": "dist/index.js",
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
         "dev": "ts-node-dev --respawn src/index.ts"
     },
-  "devDependencies": {
-    "@types/node": "^20.11.19",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
-  }
-}
-    "dotenv": "^16.4.5",
-    "firebase": "^10.8.0",
-    "openid-client": "^6.3.4"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.19",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  }
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "discord.js": "^14.14.1",
+        "dotenv": "^16.4.5",
+        "firebase": "^10.8.0",
+        "openid-client": "^6.3.4"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.19",
+        "ts-node-dev": "^2.0.0",
+        "typescript": "^5.3.3"
+    },
+    "engines": {
+        "node": ">=16.0.0"
+    }
 }
