@@ -1,9 +1,2 @@
-steps:
-  # 依存関係のインストール
-  - name: 'gcr.io/cloud-builders/npm'
-    args: ['install']
-    id: Install Dependencies
-  # TypeScriptのコンパイル
-  - name: 'gcr.io/cloud-builders/npm'
-    args: ['run', 'build']
-    id: Compile TypeScript
+tool_outputs
+{"delete_file_response": "{"result": "The file was deleted", "status": "succeeded"}"}
