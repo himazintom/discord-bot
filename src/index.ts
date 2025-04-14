@@ -1,4 +1,5 @@
 import { Client, GatewayIntentBits, TextChannel } from 'discord.js';
+import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   collection, 
@@ -16,12 +17,21 @@ import {
 } from 'firebase/firestore';
 import { client } from './config/discord';
 import { db } from './config/firebase';
-
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+  measurementId: process.env.FIREBASE_MEASUREMENT_ID
+};
+initializeApp(firebaseConfig);
 
 console.log('--------------------------------------------------');
 console.log('環境変数の確認:');
 console.log('DISCORD_BOT_TOKEN:', process.env.DISCORD_BOT_TOKEN ? '設定されています' : '設定されていません');
-console.log('VITE_FIREBASE_API_KEY:', process.env.VITE_FIREBASE_API_KEY ? '設定されています' : '設定されていません');
+console.log('FIREBASE_API_KEY:', process.env.FIREBASE_API_KEY ? '設定されています' : '設定されていません');
 
 client.once('ready', () => {
   console.log('Discordボットが起動しました！');
@@ -63,7 +73,7 @@ async function updatePastMessages(userId: string, newSettings: {
         userUrl?: string | null,
         comment?: string | null
       } = {};
-      
+
       if (newSettings.displayName !== undefined) {
         updates.author = newSettings.displayName || doc.data().author;
       }
@@ -76,14 +86,15 @@ async function updatePastMessages(userId: string, newSettings: {
       if (newSettings.comment !== undefined) {
         updates.comment = newSettings.comment;
       }
-      
+
       batch.update(messageRef, updates);
     });
 
     await batch.commit();
     console.log(`${querySnapshot.size}件のメッセージを更新しました`);
   } catch (error) {
-    console.error('過去のメッセージの更新中にエラーが発生しました:', error);
+      console.error('過去のメッセージの更新中にエラーが発生しました:', error);
+    process.exit(1)
     throw error;
   }
 }
@@ -152,8 +163,8 @@ client.on('messageCreate', async (message) => {
     const settingsRef = doc(db, 'userDisplaySettings', message.author.id);
     let updateMessage = '設定を更新しました。';
 
-    try {
-      if (args[1] === 'set') {
+try {
+    if (args[1] === 'set') {
         // 一括設定の処理
         const settings: {
           displayName?: string;
@@ -161,7 +172,7 @@ client.on('messageCreate', async (message) => {
           userUrl?: string;
           comment?: string;
         } = {};
-
+       
         // 引数をパースする
         const fullInput = message.content.slice('!display set '.length);
         // スペースを許容する正規表現に変更
@@ -370,6 +381,7 @@ client.on('messageCreate', async (message) => {
       message.reply(updateMessage);
     } catch (error) {
       console.error('設定の更新中にエラーが発生しました:', error);
+      process.exit(1)
       message.reply('設定の更新中にエラーが発生しました。');
     }
     return;
@@ -407,7 +419,7 @@ client.on('messageCreate', async (message) => {
     const attachments = Array.from(message.attachments.values());
     const images = attachments.filter(attachment => 
       attachment.contentType?.startsWith('image/'));
-    
+
     await addDoc(messagesRef, {
       discordMessageId: message.id,
       content: message.content,
@@ -427,7 +439,8 @@ client.on('messageCreate', async (message) => {
     });
     console.log(`メッセージがFirestoreに保存されました (チャンネル: ${channelName})`);
   } catch (error) {
-    console.error('メッセージの保存中にエラーが発生しました:', error);
+      console.error('メッセージの保存中にエラーが発生しました:', error);
+    process.exit(1)
   }
 });
 
@@ -453,7 +466,7 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
       const attachments = Array.from(newMessage.attachments.values());
-      const images = attachments.filter(attachment => 
+      const images = attachments.filter(attachment =>
         attachment.contentType?.startsWith('image/'));
 
       await updateDoc(doc.ref, {
@@ -470,6 +483,7 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
     }
   } catch (error) {
     console.error('メッセージの更新中にエラーが発生しました:', error);
+    process.exit(1)
   }
 });
 
@@ -498,7 +512,8 @@ client.on('messageDelete', async (message) => {
     }
   } catch (error) {
     console.error('メッセージの削除中にエラーが発生しました:', error);
+    process.exit(1)
   }
 });
 
-client.login(process.env.DISCORD_BOT_TOKEN); 
+client.login(process.env.DISCORD_BOT_TOKEN);
