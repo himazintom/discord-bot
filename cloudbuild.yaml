@@ -7,7 +7,7 @@ steps:
       - '-t'
       - 'gcr.io/${PROJECT_ID}/discord-bot:${COMMIT_SHA}'
       - '.'
-    timeout: '1200s'
+    timeout: '3600s'
   # Docker イメージのプッシュ
   - name: 'gcr.io/cloud-builders/docker'
     id: Push
@@ -15,7 +15,7 @@ steps:
       - 'push'
       - 'gcr.io/${PROJECT_ID}/discord-bot:${COMMIT_SHA}'
     timeout: '1200s'
-  # Cloud Run へのデプロイ
+  # Cloud Run へのデプロイ # Cloud Run へのデプロイ
   - name: 'gcr.io/cloud-builders/gcloud'
     id: Deploy
     args:
@@ -27,6 +27,5 @@ steps:
       - '--region'
       - 'asia-northeast1'
       - '--platform'
-      - 'managed'
-    timeout: '1200s'
-timeout: '1200s'
+      - 'managed'    timeout: '3600s'
+timeout: '3600s'
