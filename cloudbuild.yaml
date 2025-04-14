@@ -1,2 +1,32 @@
-tool_outputs
-{"delete_file_response": "{"result": "The file was deleted", "status": "succeeded"}"}
+steps:
+  # Docker イメージのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/${PROJECT_ID}/discord-bot:${COMMIT_SHA}'
+      - '.'
+    timeout: '1200s'
+  # Docker イメージのプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - 'gcr.io/${PROJECT_ID}/discord-bot:${COMMIT_SHA}'
+    timeout: '1200s'
+  # Cloud Run へのデプロイ
+  - name: 'gcr.io/cloud-builders/gcloud'
+    id: Deploy
+    args:
+      - 'run'
+      - 'deploy'
+      - 'discord-bot'
+      - '--image'
+      - 'gcr.io/${PROJECT_ID}/discord-bot:${COMMIT_SHA}'
+      - '--region'
+      - 'asia-northeast1'
+      - '--platform'
+      - 'managed'
+    timeout: '1200s'
+timeout: '1200s'

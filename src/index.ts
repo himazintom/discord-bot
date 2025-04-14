@@ -1,7 +1,6 @@
 import { Client, GatewayIntentBits, TextChannel } from 'discord.js';
-import * as dotenv from 'dotenv';
-import { 
-  getFirestore, 
+import {
+  getFirestore,
   collection, 
   addDoc, 
   query, 
@@ -15,15 +14,11 @@ import {
   serverTimestamp,
   writeBatch
 } from 'firebase/firestore';
-
-import path from 'path';
-dotenv.config();
 import { client } from './config/discord';
 import { db } from './config/firebase';
 
-// .envファイルのパスを指定
-dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
+console.log('--------------------------------------------------');
 console.log('環境変数の確認:');
 console.log('DISCORD_BOT_TOKEN:', process.env.DISCORD_BOT_TOKEN ? '設定されています' : '設定されていません');
 console.log('VITE_FIREBASE_API_KEY:', process.env.VITE_FIREBASE_API_KEY ? '設定されています' : '設定されていません');
@@ -48,18 +43,18 @@ async function getUserDisplaySettings(userId: string) {
 }
 
 // 過去のメッセージを更新
-async function updatePastMessages(userId: string, newSettings: { 
-  displayName?: string, 
+async function updatePastMessages(userId: string, newSettings: {
+  displayName?: string,
   avatarUrl?: string,
   userUrl?: string | null,
-  comment?: string | null 
+  comment?: string | null
 }) {
   try {
     const messagesRef = collection(db, 'messages');
     const q = query(messagesRef, where('authorId', '==', userId));
     const querySnapshot = await getDocs(q);
 
-    const batch = writeBatch(db);
+      const batch = writeBatch(db);
     querySnapshot.docs.forEach((doc) => {
       const messageRef = doc.ref;
       const updates: { 
@@ -107,9 +102,9 @@ function validateImage(attachment: any): { isValid: boolean; error?: string } {
 
   // サイズをチェック
   if (attachment.width > 512 || attachment.height > 512) {
-    return { 
-      isValid: false, 
-      error: '画像サイズは512x512ピクセル以下である必要があります。' 
+    return {
+      isValid: false,
+      error: '画像サイズは512x512ピクセル以下である必要があります。'
     };
   }
 
@@ -160,7 +155,7 @@ client.on('messageCreate', async (message) => {
     try {
       if (args[1] === 'set') {
         // 一括設定の処理
-        const settings: { 
+        const settings: {
           displayName?: string;
           avatarUrl?: string;
           userUrl?: string;
@@ -229,7 +224,7 @@ client.on('messageCreate', async (message) => {
         if (settings.avatarUrl) updatedItems.push('アバター画像');
         if (settings.userUrl) updatedItems.push(`URL: ${unescapeUrl(settings.userUrl)}`);
         if (settings.comment) updatedItems.push(`コメント: ${settings.comment}`);
-        
+
         updateMessage = `以下の設定を更新し、過去のメッセージも更新しました：\n${updatedItems.join('\n')}`;
         message.reply(updateMessage);
         return;
@@ -280,13 +275,13 @@ client.on('messageCreate', async (message) => {
           break;
 
         case 'clear':
-          await setDoc(settingsRef, { 
-            displayName: null, 
+          await setDoc(settingsRef, {
+            displayName: null,
             avatarUrl: null,
             userUrl: null,
             comment: null
           });
-          await updatePastMessages(message.author.id, { 
+          await updatePastMessages(message.author.id, {
             displayName: message.author.username,
             avatarUrl: message.author.displayAvatarURL({ size: 64 }),
             userUrl: null,
@@ -298,7 +293,7 @@ client.on('messageCreate', async (message) => {
         case 'avatar':
           let avatarUrl = args[2];
           let validatedAttachment = null;
-          
+
           // 添付ファイルがある場合、それを優先
           if (message.attachments.size > 0) {
             const attachment = message.attachments.first();
@@ -333,13 +328,13 @@ client.on('messageCreate', async (message) => {
             try {
               const response = await fetch(avatarUrl);
               const contentType = response.headers.get('content-type');
-              
+
               if (contentType === 'image/gif') {
                 message.reply('GIF形式の画像は使用できません。');
                 return;
               }
-              
-              if (!contentType?.startsWith('image/')) {
+
+              if (contentType&&!contentType?.startsWith('image/')) {
                 message.reply('指定されたURLは画像ではありません。');
                 return;
               }
@@ -383,28 +378,28 @@ client.on('messageCreate', async (message) => {
   // 通常のメッセージ処理
   try {
     const channelName = message.channel instanceof TextChannel ? message.channel.name : 'DM';
-    
+
     // 特定のチャンネル（gallery, test）のメッセージのみを保存
     const allowedChannels = ['gallery', 'test']; // 保存したいチャンネル名のリスト
     if (!allowedChannels.includes(channelName)) {
       return; // 許可されていないチャンネルのメッセージは保存しない
     }
-    
+
     const messagesRef = collection(db, 'messages');
 
     // ユーザー設定を取得
     const userSettings = await getUserDisplaySettings(message.author.id);
-    
+
     // プロフィールが未登録の場合、メッセージを送信して登録を促す
     if (!userSettings) {
-      const profileHelpMessage = 
+      const profileHelpMessage =
         'プロフィールが未登録です。以下のコマンドでプロフィールを設定してください：\n\n' +
         '!display name <表示名>\n' +
         '!display avatar <画像URL または画像を添付>\n' +
         '!display url <URL>\n' +
         '!display comment <16文字以内のコメント>\n\n' +
         '一括設定の例: !display set name:"名前" url:"https://example.com" comment:"コメント"';
-      
+
       await message.reply(profileHelpMessage);
     }
     
@@ -443,7 +438,7 @@ client.on('messageUpdate', async (oldMessage, newMessage) => {
 
   // チャンネル名を取得
   const channelName = newMessage.channel instanceof TextChannel ? newMessage.channel.name : 'DM';
-  
+
   // 特定のチャンネルのメッセージのみを処理
   const allowedChannels = ['gallery', 'test']; // 保存したいチャンネル名のリスト
   if (!allowedChannels.includes(channelName)) {
@@ -484,7 +479,7 @@ client.on('messageDelete', async (message) => {
 
   // チャンネル名を取得
   const channelName = message.channel instanceof TextChannel ? message.channel.name : 'DM';
-  
+
   // 特定のチャンネルのメッセージのみを処理
   const allowedChannels = ['gallery', 'test']; // 保存したいチャンネル名のリスト
   if (!allowedChannels.includes(channelName)) {
